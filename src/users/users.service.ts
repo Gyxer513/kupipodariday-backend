@@ -1,26 +1,96 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { WishesService } from 'src/wishes/wishes.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private wishesService: WishesService,
+  ) {}
+
+  findOne(query: FindOneOptions<User>) {
+    return this.userRepository.findOne(query);
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findMany(query: FindManyOptions<User>) {
+    return this.userRepository.find(query);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findByNameOrEmail(query: string) {
+    return this.findMany({
+      where: [{ username: query }, { email: query }],
+    });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  /* Создаём пользователя */
+  async create(payload: CreateUserDto): Promise<User> {
+    const { username, email } = payload;
+
+    if (await this.findOne({ where: [{ email }, { username }] })) {
+      throw new ConflictException('Такой пользователь уже зарегистрирован');
+    }
+
+    const hash = await bcrypt.hash(payload.password, 10);
+    const user = await this.userRepository.save({
+      ...payload,
+      password: hash,
+    });
+
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  /* Обновляем информацию о пользователе */
+  async update(id: number, payload: UpdateUserDto): Promise<User> {
+    const { username, email } = payload;
+    if (username || email) {
+      if (await this.findOne({ where: [{ email }, { username }] })) {
+        throw new ConflictException('Такой пользователь уже зарегистрирован');
+      }
+
+      const data = { ...payload };
+      if (payload.password) {
+        const hash = await bcrypt.hash(payload.password, 10);
+        data.password = hash;
+      }
+
+      await this.userRepository.update(id, data);
+      const user = await this.userRepository.findOneBy({ id });
+
+      return user;
+    }
+  }
+
+  findByUsername(username: string) {
+    return this.findOne({
+      where: { username },
+    });
+  }
+  async findUserWishes(userId: number) {
+    const user = await this.findOne({
+      where: { id: userId },
+      relations: {
+        wishes: { owner: true },
+      },
+    });
+
+    return user.wishes;
+  }
+
+  async findOtherUserWishes(username: string) {
+    const user = await this.findOne({
+      where: { username },
+      relations: {
+        wishes: true,
+      },
+    });
+
+    return user.wishes;
   }
 }

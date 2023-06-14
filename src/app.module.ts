@@ -14,7 +14,7 @@ import { WishlistsModule } from './wishlists/wishlists.module';
       port: 5432,
       username: 'student',
       password: 'student',
-      database: 'nest_project',
+      database: 'kupipodariday',
       entities: [],
       synchronize: true,
     }),
