@@ -34,7 +34,7 @@ export class WishesController {
 
   @Get(':id')
   getById(@Param('id') id: string) {
-    return this.wishesService.getWishById(+id);
+    return this.wishesService.findWishById(+id);
   }
 
   @Patch(':id')

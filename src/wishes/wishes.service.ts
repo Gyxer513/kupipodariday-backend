@@ -51,7 +51,7 @@ export class WishesService {
     });
   }
 
-  getWishById(id: number) {
+  findWishById(id: number) {
     return this.findOne({
       where: { id },
       relations: { owner: true },
