@@ -5,9 +5,18 @@ import { UsersModule } from './users/users.module';
 import { OffersModule } from './offers/offers.module';
 import { WishesModule } from './wishes/wishes.module';
 import { WishlistsModule } from './wishlists/wishlists.module';
+import { AuthModule } from './auth/auth.module';
+import { User } from './users/entities/user.entity';
+import { Wish } from './wishes/entities/wish.entity';
+import { Wishlist } from './wishlists/entities/wishlist.entity';
+import { Offer } from './offers/entities/offer.entity';
 
 @Module({
   imports: [
+    UsersModule,
+    OffersModule,
+    WishesModule,
+    WishlistsModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -15,15 +24,12 @@ import { WishlistsModule } from './wishlists/wishlists.module';
       username: 'student',
       password: 'student',
       database: 'kupipodariday',
-      entities: [],
+      entities: [User, Wish, Wishlist, Offer],
       synchronize: true,
     }),
-    UsersModule,
-    OffersModule,
-    WishesModule,
-    WishlistsModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }
