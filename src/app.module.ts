@@ -10,6 +10,7 @@ import { User } from './users/entities/user.entity';
 import { Wish } from './wishes/entities/wish.entity';
 import { Wishlist } from './wishlists/entities/wishlist.entity';
 import { Offer } from './offers/entities/offer.entity';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -25,9 +26,10 @@ import { Offer } from './offers/entities/offer.entity';
       password: 'student',
       database: 'kupipodariday',
       entities: [User, Wish, Wishlist, Offer],
-      synchronize: true,
+      synchronize: false,
     }),
-    AuthModule
+    AuthModule,
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [],

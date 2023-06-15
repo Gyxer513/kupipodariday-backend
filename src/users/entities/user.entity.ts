@@ -1,4 +1,5 @@
 import {
+  Entity,
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,6 +11,8 @@ import { Wish } from 'src/wishes/entities/wish.entity';
 import { Offer } from 'src/offers/entities/offer.entity';
 import { Wishlist } from 'src/wishlists/entities/wishlist.entity';
 
+
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
