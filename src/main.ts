@@ -9,8 +9,8 @@ async function bootstrap() {
     origin: 'http://lokalhost:3001',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-  };corsOptions
-  app.enableCors()
+  };
+  app.enableCors(corsOptions)
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   await app.listen(3001);
 }
