@@ -4,7 +4,6 @@ import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { WishesService } from 'src/wishes/wishes.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,7 +11,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private wishesService: WishesService,
   ) {}
 
   findOne(query: FindOneOptions<User>) {
