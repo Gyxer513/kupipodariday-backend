@@ -28,7 +28,7 @@ export class Wishlist {
   @IsString()
   name: string;
 
-  @Column()
+  @Column({default: 'Тут должно быть описание'})
   @Length(1, 1500)
   description: string;
 
