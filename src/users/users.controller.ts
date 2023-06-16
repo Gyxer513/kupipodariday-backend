@@ -12,7 +12,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CustomRequest } from '../utils/custom-request'
 import { FindUserDto } from './dto/find-user.dto';
-import { JwtGuard } from 'src/auth/jwt.ruard';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
 @UseGuards(JwtGuard)
 @Controller('users')

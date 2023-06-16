@@ -13,7 +13,7 @@ import { WishlistsService } from './wishlists.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { CustomRequest } from '../utils/custom-request'
-import { JwtGuard } from 'src/auth/jwt.ruard';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
 @UseGuards(JwtGuard)
 @Controller('wishlists')

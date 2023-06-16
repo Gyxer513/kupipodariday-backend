@@ -10,7 +10,7 @@ import {
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { CustomRequest } from '../utils/custom-request';
-import { JwtGuard } from 'src/auth/jwt.ruard';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
 @UseGuards(JwtGuard)
 @Controller('offers')
