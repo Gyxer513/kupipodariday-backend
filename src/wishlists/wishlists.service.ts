@@ -68,18 +68,14 @@ export class WishlistsService {
     return this.findOne({ where: { id } });
   }
 
-  async remove(id: number, user: User) {
-    const wishlist = await this.findOne({
-      where: { id }
-    });
-    if (!wishlist) {
-      throw new ForbiddenException('Нельзя удалять чужие подарки');
-    } else
-
-      if (wishlist.owner.id !== user.id) {
-        throw new UnauthorizedException('Необходима авторизация');
-      }
-    await this.wishlistsRepository.delete(id);
-    return 'Удалено';
+  async remove(userId: number, wishlistId: number) {
+    const wishlist = await this.findById(wishlistId);
+    if (userId !== wishlist.owner.id) {
+      throw new ForbiddenException(
+        'Удалять можно только свои подборки подарков',
+      );
+    }
+    await this.wishlistsRepository.delete(wishlistId);
+    return wishlist;
   }
 }

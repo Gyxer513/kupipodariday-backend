@@ -18,18 +18,17 @@ export class OffersController {
   constructor(private readonly offersService: OffersService) { }
 
   @Post()
-  async createOffer(@Body() createOfferDto: CreateOfferDto, @Req() req: CustomRequest) {
-    const offer = await this.offersService.createOffer(createOfferDto, req);
-    return offer;
+  create(@Body() createOfferDto: CreateOfferDto, @Req() req: CustomRequest) {
+    return this.offersService.create(createOfferDto, req.user.id);
   }
 
   @Get()
-  async findOffers() {
-    return await this.offersService.findOffers();
+  getOffers() {
+    return this.offersService.getOffers();
   }
 
   @Get(':id')
-  async getOfferById(@Param('id') id: string) {
-    return await this.offersService.findOfferById(id);
+  getById(@Param('id') id: string) {
+    return this.offersService.getById(+id);
   }
 }

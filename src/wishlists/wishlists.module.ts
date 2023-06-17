@@ -7,7 +7,7 @@ import { WishesModule } from '../wishes/wishes.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Wishlist]), WishesModule, UsersModule],
+  imports: [TypeOrmModule.forFeature([Wishlist])],
   controllers: [WishlistsController],
   providers: [WishlistsService],
 })

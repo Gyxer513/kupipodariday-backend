@@ -24,7 +24,7 @@ export class AuthService {
     async validatePassword(username: string, password: string) {
         const checkedUser = await this.userService.findByUsername(username);
         if (!checkedUser) {
-            throw new UnauthorizedException('Неправильный пароль');
+            throw new UnauthorizedException('Неверный логин');
         }
         const checkPassword = await bcrypt.compare(password, checkedUser.password).then((matched) => {
             if (!matched) {

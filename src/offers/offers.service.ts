@@ -1,53 +1,84 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository, } from '@nestjs/typeorm';
 import { WishesService } from '../wishes/wishes.service';
 import { Offer } from './entities/offer.entity';
-import { Repository } from 'typeorm';
+import {
+  DataSource,
+  FindManyOptions,
+  FindOneOptions,
+  Repository,
+} from 'typeorm';
+import { Wish } from 'src/wishes/entities/wish.entity';
 
 @Injectable()
 export class OffersService {
   constructor(
+    private dataSource: DataSource,
     @InjectRepository(Offer)
-    private readonly offersRepository: Repository<Offer>,
-    private readonly wishesService: WishesService,
+    private offerRepository: Repository<Offer>,
+    private wishesService: WishesService,
   ) { }
 
-  async findOffers() {
-    const offers = await this.offersRepository.find({
-      relations: ['item', 'user'],
+  async create(createOfferDto: CreateOfferDto, userId: number) {
+    const { amount, itemId } = createOfferDto;
+    const wish = await this.wishesService.findOne({
+      where: { id: itemId },
+      relations: ['owner'],
     });
-    if (!offers) {
-      throw new NotFoundException('Такого подарка нет');
+    const { price, raised, owner } = wish;
+
+    if (owner.id === userId) {
+      throw new ForbiddenException(
+        'Нельзя скидываться на свои подарки',
+      );
     }
-    offers.map((offer) => delete offer.user.password);
-    return offers;
+
+    if (amount + raised > price) {
+      throw new ForbiddenException('Сумма превышает остаток'
+      );
+    }
+
+    const offer = this.offerRepository.create({
+      ...createOfferDto,
+      user: { id: userId },
+      item: { id: itemId },
+    });
+
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.insert<Offer>(Offer, offer);
+      await transactionalEntityManager.update<Wish>(Wish, itemId, {
+        raised: raised + amount,
+      });
+    });
+
+    return {};
   }
 
-  async findOfferById(id) {
-    const offer = await this.offersRepository.findOne({
+  findMany(query: FindManyOptions<Offer>) {
+    return this.offerRepository.find(query);
+  }
+
+  findOne(query: FindOneOptions<Offer>) {
+    return this.offerRepository.findOne(query);
+  }
+
+  getOffers() {
+    return this.findMany({
+      relations: {
+        item: { owner: true },
+        user: { wishes: true, offers: true },
+      },
+    });
+  }
+
+  getById(id: number) {
+    return this.findOne({
       where: { id },
-      relations: ['item', 'user'],
+      relations: {
+        item: { owner: true },
+        user: { wishes: true, offers: true },
+      },
     });
-    if (!offer) {
-      throw new NotFoundException('Такого подарка нет');
-    }
-    delete offer.user.password;
-    return offer;
-  }
-
-  async createOffer(data, info) {
-    const userWish = await this.wishesService.findWishById(data.id);
-    if (!userWish) {
-      throw new NotFoundException('Такого подарка нет');
-    }
-    delete info.user.password;
-    delete userWish.owner.password;
-    const offer = this.offersRepository.create({
-      ...data,
-      user: info.user,
-      item: userWish,
-    });
-    return await this.offersRepository.save(offer);
   }
 }

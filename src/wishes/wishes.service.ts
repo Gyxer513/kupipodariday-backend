@@ -22,7 +22,7 @@ export class WishesService {
     private dataSource: DataSource,
     @InjectRepository(Wish)
     private wishesRepository: Repository<Wish>,
-  ) {}
+  ) { }
 
   create(createWishDto: CreateWishDto, ownerId: number) {
     const wish = this.wishesRepository.create({
@@ -58,29 +58,27 @@ export class WishesService {
     });
   }
 
-  async update(id: number, user: User, payload: UpdateWishDto) {
-    const wish = await this.wishesRepository.findOne({
-      relations: {
-        owner: true,
-      },
-      where: {
-        id,
-      },
+  async raiseAmount(wishId: number, amount: number) {
+    return await this.wishesRepository.update({ id: wishId }, { raised: amount });
+  }
+
+  async update(id: number, userId: number, updateWishDto: UpdateWishDto) {
+    const wish = await this.findOne({
+      where: { id },
+      relations: { owner: true },
     });
 
-    if (wish.raised > 0) {
+    if (userId !== wish.owner.id) {
+      throw new ForbiddenException('Вы не можете редактировать чужие подарки');
+    }
+
+    if (updateWishDto.price && wish.raised > 0) {
       throw new ForbiddenException(
-        'Нельязя изменять стоимость при наличии желающих скинуться',
+        'Вы не можете изменять стоимость подарка, если уже есть желающие скинуться',
       );
     }
 
-    if (wish.owner.id !== user.id) {
-      throw new UnauthorizedException('Нельзя редактировать чужие подарки');
-    }
-
-    await this.wishesRepository.update(id, { ...payload });
-
-    return {};
+    return this.wishesRepository.update(id, updateWishDto);
   }
 
   async remove(id: number, userId: number) {
@@ -101,34 +99,40 @@ export class WishesService {
     return wish;
   }
 
-  async copy(id: number, user: User) {
-    const wish = await this.findOne({ where: { id: id } });
+  async copy(wishId: number, userId: number) {
+    const wish = await this.findOne({ where: { id: wishId } });
 
-    const { name, link, image, price, copied } = wish;
+    const { name, description, image, link, price, copied } = wish;
 
-    if (!wish) {
-      throw new NotFoundException('Такого подарка нет');
-    } else 
-    
-    if (wish.owner.id === user.id) {
-      throw new ForbiddenException(
-        'У вас уже есть такой подарок',
-      );
+    const isExist = !!(await this.findOne({
+      where: {
+        name,
+        link,
+        price,
+        owner: { id: userId },
+      },
+      relations: { owner: true },
+    }));
+
+    if (isExist) {
+      throw new ForbiddenException('Вы уже копировали себе этот подарок');
     }
-    const wishCopyDto = {
-      name: name,
-      link: link,
-      image: image,
-      price: price,
-      copied: copied + 1,
+
+    const wishCopy = {
+      name,
+      description,
+      image,
+      link,
+      price,
+      owner: { id: userId },
     };
 
     await this.dataSource.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.update<Wish>(Wish, id, {
+      await transactionalEntityManager.update<Wish>(Wish, wishId, {
         copied: copied + 1,
       });
 
-      await transactionalEntityManager.insert<Wish>(Wish, wishCopyDto);
+      await transactionalEntityManager.insert<Wish>(Wish, wishCopy);
     });
 
     return {};
