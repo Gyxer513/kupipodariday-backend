@@ -1,8 +1,8 @@
 {
   "name": "kupipodariday-backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "back-end project",
+  "author": "Filipp P.",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

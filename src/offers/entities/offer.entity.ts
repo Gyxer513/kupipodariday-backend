@@ -6,6 +6,7 @@ import {
     ManyToOne,
     Column,
 } from 'typeorm';
+import { IsInt } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
 
@@ -33,6 +34,7 @@ export class Offer {
         scale: 2,
         default: 0,
     })
+    @IsInt()
     amount: number;
 
     @Column({ default: false })

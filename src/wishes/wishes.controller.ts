@@ -47,7 +47,7 @@ export class WishesController {
     @Req() req: CustomRequest,
     @Body() updateWishDto: UpdateWishDto,
   ) {
-    return this.wishesService.update(+id, req.user, updateWishDto);
+    return this.wishesService.update(+id, req.user.id, updateWishDto);
   }
   @UseGuards(JwtGuard)
   @Delete(':id')
@@ -57,6 +57,6 @@ export class WishesController {
   @UseGuards(JwtGuard)
   @Post(':id/copy')
   copy(@Param('id') id: string, @Req() req: CustomRequest) {
-    return this.wishesService.copy(+id, req.user);
+    return this.wishesService.copy(+id, req.user.id);
   }
 }
